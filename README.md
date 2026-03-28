@@ -4,6 +4,10 @@
 
 Este projeto implementa as funcionalidades do **AyuGram 12.2.10** no **Telegraph 12.3.1.1**, criando um cliente Telegram modificado com recursos avancados de privacidade e espionagem. O Telegraph ja possui um sistema anti-delete basico (escondido na pagina Telegram Business), mas ele e limitado e inconveniente. Este mod substitui e aprimora esse sistema com as funcionalidades completas do AyuGram.
 
+## APK Pronto para Instalar
+
+O arquivo `Telegraph_AyuGram_Mod.apk` esta disponivel neste repositorio, ja assinado e pronto para instalar. **Nota**: Como o APK e assinado com uma chave diferente da original, e necessario desinstalar a versao anterior do Telegraph antes de instalar.
+
 ## Funcionalidades Implementadas
 
 ### 1. Anti-Delete Aprimorado (Espionagem)
@@ -21,15 +25,15 @@ O sistema anti-delete do Telegraph original requer que o usuario navegue ate a p
 
 ### 2. Modo Fantasma (Ghost Mode)
 
-O Modo Fantasma permite controlar completamente sua visibilidade no Telegram, com as seguintes opcoes individuais que podem ser ativadas ou desativadas separadamente.
+O Modo Fantasma permite controlar completamente sua visibilidade no Telegram, com as seguintes opcoes individuais que podem ser ativadas ou desativadas separadamente. **Todos os recursos estao ativos por padrao.**
 
-| Opcao | Descricao | Padrao |
-|---|---|---|
-| Nao visualizar mensagens | Nao envia confirmacao de leitura | Ativo |
-| Nao visualizar Stories | Nao marca stories como vistos | Ativo |
-| Ocultar Online | Nao envia status online | Ativo |
-| Ocultar Digitando | Nao envia indicador de digitacao | Ativo |
-| Ficar offline automaticamente | Envia pacote offline apos ficar online | Ativo |
+| Opcao | Descricao | Padrao | Metodo Interceptado |
+|---|---|---|---|
+| Nao visualizar mensagens | Nao envia confirmacao de leitura | Ativo | u9 (readHistory) |
+| Nao visualizar Stories | Nao marca stories como vistos | Ativo | G1 (readStories) |
+| Ocultar Online | Nao envia status online | Ativo | ih (updateStatus) |
+| Ocultar Digitando | Nao envia indicador de digitacao | Ativo | Xf (setTyping) |
+| Ficar offline automaticamente | Envia pacote offline apos ficar online | Ativo | sendOfflinePacketAfterOnline |
 
 ### 3. Funcionalidades Adicionais
 
@@ -56,51 +60,80 @@ As modificacoes sao feitas diretamente no codigo smali (bytecode Dalvik) do Tele
 
 | Arquivo Smali | Funcao | Modificacao |
 |---|---|---|
-| `org/telegram/Nnn/Official.smali` | Anti-delete flag | Substituido por sistema AyuGram |
-| `org/telegram/messenger/Iq.smali` | MessagesController | Interceptar deleteMessages e readHistory |
-| `org/telegram/messenger/bw.smali` | MessagesStorage | Persistencia de mensagens deletadas |
-| `smali_classes7/org/telegram/ui/LaunchActivity` | Status online | Interceptar updateStatus |
+| `smali/com/radolyn/ayugram/AyuConfig.smali` | Configuracoes | Classe nova - gerencia todas as prefs |
+| `smali/org/telegram/Nnn/Official.smali` | Anti-delete flag | NnnOfficial forcado true + AyuConfig init |
+| `smali_classes6/org/telegram/messenger/Iq.smali` | MessagesController | Ghost Mode (read, typing, online) |
+| `smali_classes9/org/telegram/ui/Stories/t2.smali` | StoriesController | Ghost Mode (stories) |
 
-### Novas Classes Adicionadas
+### Classe AyuConfig
 
-Novas classes smali foram criadas no pacote `com/radolyn/ayugram/` para gerenciar as funcionalidades.
+A classe `AyuConfig.smali` gerencia todas as configuracoes via SharedPreferences. Os campos e metodos principais sao descritos abaixo.
 
-| Classe | Responsabilidade |
-|---|---|
-| `AyuConfig.smali` | Gerenciamento de todas as configuracoes via SharedPreferences |
-| `AyuGhostConfig.smali` | Configuracoes especificas do Modo Fantasma |
-| `AyuMessagesController.smali` | Controlador de salvamento de mensagens deletadas/editadas |
-| `AyuPreferencesActivity.smali` | Tela de configuracoes do AyuGram |
+| Campo | Tipo | Default | Descricao |
+|---|---|---|---|
+| sendReadPackets | boolean | false | Enviar confirmacao de leitura |
+| sendOnlinePackets | boolean | false | Enviar status online |
+| sendUploadProgress | boolean | false | Enviar progresso de upload |
+| sendTypingPackets | boolean | false | Enviar indicador de digitacao |
+| sendOfflinePacketAfterOnline | boolean | true | Enviar offline apos online |
+| saveDeletedMessages | boolean | true | Salvar mensagens deletadas |
+| saveMessagesHistory | boolean | true | Salvar historico de edicoes |
+| markReadAfterSend | boolean | true | Marcar lido ao enviar |
+| saveForBots | boolean | true | Salvar mensagens de bots |
+| showGhostToggleInDrawer | boolean | true | Toggle ghost no drawer |
 
 ## Checkpoints
 
 Cada etapa do desenvolvimento e documentada como um checkpoint no repositorio.
 
-| Checkpoint | Descricao | Status |
-|---|---|---|
-| CP-001 | Setup inicial e analise dos APKs | Concluido |
-| CP-002 | Implementacao Anti-Delete | Em andamento |
-| CP-003 | Implementacao Modo Fantasma | Pendente |
-| CP-004 | Implementacao UI de Configuracoes | Pendente |
-| CP-005 | Build e assinatura do APK final | Pendente |
+| Checkpoint | Data | Descricao | Status |
+|---|---|---|---|
+| CP-001 | 2026-03-28 | Setup inicial, descompilacao e analise dos APKs | Concluido |
+| CP-002 | 2026-03-28 | Implementacao core: Anti-Delete + Ghost Mode + Build APK | Concluido |
 
 ## Como Compilar
 
-O processo de compilacao envolve descompilar o Telegraph com apktool, aplicar as modificacoes smali, recompilar e assinar o APK resultante.
+O script `build.sh` automatiza todo o processo de compilacao.
 
 ```bash
-# Descompilar
-apktool d Telegraph_12.3.1.1.apk -o telegraph-decompiled
+# Metodo automatizado
+chmod +x build.sh
+./build.sh Telegraph_12.3.1.1.apk
 
-# Aplicar patches (automatizado)
-./apply_patches.sh
-
-# Recompilar
-apktool b telegraph-decompiled -o telegraph-modded.apk
-
-# Assinar
-apksigner sign --ks keystore.jks telegraph-modded.apk
+# Metodo manual
+apktool d Telegraph_12.3.1.1.apk -o decompiled
+# Aplicar patches smali (ver patches/README.md)
+apktool b decompiled
+# Substituir dex no APK original (ver build.sh)
+zipalign -v -p 4 telegraph-modded.apk telegraph-aligned.apk
+apksigner sign --ks graph-key.jks telegraph-aligned.apk
 ```
+
+## Estrutura do Repositorio
+
+```
+Graph/
+├── README.md                           # Este arquivo
+├── build.sh                            # Script de build automatizado
+├── Telegraph_AyuGram_Mod.apk          # APK final assinado
+├── docs/
+│   ├── CP-001-setup-analise.md         # Checkpoint 1: Setup e analise
+│   └── CP-002-implementacao-core.md    # Checkpoint 2: Implementacao core
+└── patches/
+    ├── README.md                       # Documentacao detalhada dos patches smali
+    └── AyuConfig.smali                 # Classe de configuracao para copiar
+```
+
+## Proximos Passos (Futuras Versoes)
+
+Os seguintes recursos estao planejados para futuras versoes.
+
+1. **Tela de configuracoes UI** para ativar/desativar funcionalidades individualmente no app
+2. **Banco de dados local SQLite** para salvar mensagens deletadas com historico completo
+3. **Marca visual aprimorada** para mensagens deletadas (icone de lixeira) e editadas (icone de lapis)
+4. **Filtros regex** para mensagens
+5. **Personalizacao** de interface
+6. **Toggle do Ghost Mode** no drawer lateral
 
 ## Creditos
 
