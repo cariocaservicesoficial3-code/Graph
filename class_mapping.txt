@@ -1,0 +1,44 @@
+Telegraph Class Mapping:
+========================
+BaseFragment = cOm7 (smali_classes8/org/telegram/ui/ActionBar/cOm7.smali)
+ActionBar = AUX (smali_classes8/org/telegram/ui/ActionBar/AUX.smali)
+ApplicationLoader.applicationContext = cOM4.b (smali_classes6/org/telegram/messenger/cOM4.smali)
+MessageObject = Yg (smali_classes6/org/telegram/messenger/Yg.smali)
+ChatMessageCell = Com6 (smali_classes8/org/telegram/ui/Cells/Com6.smali)
+RecyclerListView = RecyclerListView (smali_classes8/org/telegram/ui/Components/RecyclerListView.smali)
+Theme = q (smali_classes8/org/telegram/ui/ActionBar/q.smali)
+LocaleController.getString = f9.F1(I) (smali_classes6/org/telegram/messenger/f9.smali)
+
+Cell Types (view types in packed-switch):
+  1 = Y (NotificationsCheckCell?)
+  2 = h1 (ShadowSectionCell - divider with grey background)
+  3 = v1 (TextInfoPrivacyCell?)
+  4 = d1 (?)
+  5 = U0 (TextSettingsCell - text with value)
+  6 = j (TextCheckCell - toggle switch)
+  7 = g1 (HeaderCell - section header)
+  8 = f1 (?)
+  9 = S0 (TextCell - text with icon)
+  default = lpt8 (?)
+
+Key Methods:
+  AUX.setBackButtonImage(I)V
+  AUX.setTitle(CharSequence)V
+  AUX.setAllowOverlayTitle(Z)V
+  AUX.setActionBarMenuOnItemClick(AUX$con)V
+  cOm7.presentFragment(cOm7)Z
+  cOm7.createView(Context)View
+  cOm7.actionBar -> AUX
+  cOm7.fragmentView -> View
+  j.d(CharSequence, CharSequence, Z, I, Z, Z)V = setTextAndCheck
+  j.setChecked(Z)V
+  U0.j(String, String, Z, Z, Z)V = setTextAndValue
+  S0.p(CharSequence, I, Z)V = setTextAndIcon
+  g1.setText(String)V = setHeaderText
+
+Drawer Menu:
+  Database table: main_menu (name, type, show, ordering)
+  Handler: LaunchActivity checks string name and launches corresponding fragment
+  Cell renderer: smali_classes8/org/telegram/ui/Cells/a.smali
+  Menu controller: GraphDrawerMenuController + MainMenuItem
+  DB helper: t7.smali
